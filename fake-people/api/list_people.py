@@ -7,17 +7,19 @@ import os
 import sqlite3
 
 
-def get_people_names() -> list[str]:
+def get_people() -> list[str]:
     """
-    Returns a list of people in the phonebook ordered in alphabetical order (a-z)
+    Returns a list of people and their phone number in the phonebook ordered in
+    alphabetical order (a-z)
     """
 
     path_to_db = os.path.join(os.pardir, "fake_people.db")
     con = sqlite3.connect(path_to_db)
     cur = con.cursor()
-    people_names = [
-        full_name[0] for full_name in cur.execute("SELECT full_name FROM people")
+    people = [
+        f"{person[0]}: {person[1]}"
+        for person in cur.execute("SELECT full_name, phone_number FROM people")
     ]
     con.close()
 
-    return sorted(people_names)
+    return sorted(people)

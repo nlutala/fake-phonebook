@@ -4,7 +4,7 @@
 from wsgiref.simple_server import make_server
 
 import falcon
-from list_people import get_people_names
+from list_people import get_people
 
 
 # Falcon follows the REST architectural style, meaning (among
@@ -15,7 +15,7 @@ class PhonebookResource:
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
         resp.content_type = falcon.MEDIA_TEXT  # Default is JSON, so override
-        people_names = get_people_names()
+        people_names = get_people()
         resp.text = "\n".join(people_names)
 
 
