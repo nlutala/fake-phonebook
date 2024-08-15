@@ -4,7 +4,7 @@
 from wsgiref.simple_server import make_server
 
 import falcon
-from list_people import get_people
+from helpers.list_people import get_people
 
 
 # Falcon follows the REST architectural style, meaning (among
