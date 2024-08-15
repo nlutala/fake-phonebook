@@ -13,7 +13,9 @@ def get_people() -> list[str]:
     alphabetical order (a-z)
     """
 
-    path_to_db = os.path.join(os.pardir, "fake_people.db")
+    parent_dir = os.path.dirname(__file__).partition("api")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    print(path_to_db)
     con = sqlite3.connect(path_to_db)
     cur = con.cursor()
     people = [
