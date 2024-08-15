@@ -4,6 +4,7 @@ Tests the get_people() method in create_and_load_data.py
 
 from unittest.mock import Mock
 
+from api.helpers import list_people
 from create_and_load.fake_people.fake_people_records import (
     get_people,
     get_phone_number,
@@ -144,3 +145,25 @@ def test_get_rows_of_people_returns_a_record():
             "www.linkedin.com/esther-frank",
         ],
     ]
+
+
+def test_get_people_from_list_people_module():
+    """
+    api.helpers.list_people.get_people() should return a list of names and a phone
+    number.
+    """
+
+    list_of_people = list_people.get_people()
+
+    assert str(type(list_of_people)) == "<class 'list'>"
+
+    for i, person in enumerate(list_of_people):
+        # For each person in the list, we'll assert that it should be represented by:
+        # FULL_NAME: PHONE_NUMBER
+        full_name = person.split(":")[0]
+        assert full_name not in ["", None, False]
+
+        phone_number = person.split(":")[1].strip()
+        assert phone_number.strip().startswith("+") is True
+        assert len(phone_number[1:].replace(" ", "")) == 12
+        assert phone_number[1:].replace(" ", "").isnumeric()
