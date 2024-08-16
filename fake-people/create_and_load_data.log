@@ -1,3 +1,0 @@
-INFO:__main__:Finished generating 1000 rows of people.
-INFO:__main__:Wrote 1000 of people to fake_person_data.csv.
-INFO:__main__:Wrote 1000 number of records to the database.
