@@ -18,9 +18,19 @@ def get_people() -> list[str]:
     con = sqlite3.connect(path_to_db)
     cur = con.cursor()
     people = [
-        f"{person[0]}: {person[1]}"
-        for person in cur.execute("SELECT full_name, phone_number FROM people")
+        "{"
+        + ", ".join(
+            [
+                "id: " + person[0],
+                "full_name: " + person[1],
+                "phone_number: " + person[2],
+            ]
+        )
+        + "}"
+        for person in cur.execute(
+            """SELECT id, full_name, phone_number FROM people order by full_name"""
+        )
     ]
     con.close()
 
-    return sorted(people)
+    return people

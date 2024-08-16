@@ -154,16 +154,31 @@ def test_get_people_from_list_people_module():
     """
 
     list_of_people = list_people.get_people()
-
     assert str(type(list_of_people)) == "<class 'list'>"
 
     for i, person in enumerate(list_of_people):
         # For each person in the list, we'll assert that it should be represented by:
-        # FULL_NAME: PHONE_NUMBER
-        full_name = person.split(":")[0]
-        assert full_name not in ["", None, False]
+        """
+        {
+        ID: PERSON_ID,
+        FULL_NAME: PERSON_FULL_NAME,
+        PHONE_NUMBER: PERSON_PHONE_NUMBER
+        }
+        """
+        # Remove the curly braces
+        person_list = person[1 : len(person) - 1].split(",")
+        assert len(person_list) == 3
 
-        phone_number = person.split(":")[1].strip()
-        assert phone_number.strip().startswith("+") is True
+        print(person_list[0])
+
+        # Validate full_name
+        full_name_field = person_list[1]
+        full_name = full_name_field.split(":")[1].strip()
+        assert full_name is not None
+
+        # Validate phone numeber
+        phone_number_field = person_list[2]
+        phone_number = phone_number_field.split(":")[1].strip()
+        assert phone_number.startswith("+")
         assert len(phone_number[1:].replace(" ", "")) == 12
         assert phone_number[1:].replace(" ", "").isnumeric()
