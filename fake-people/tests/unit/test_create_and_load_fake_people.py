@@ -2,13 +2,15 @@
 Tests the get_people() method in create_and_load_data.py
 """
 
+import os
+import sqlite3
 from unittest.mock import Mock
 
-from api.helpers import list_people
 from create_and_load.fake_people.fake_people_records import (
     get_people,
     get_phone_number,
     get_rows_of_people,
+    load_people_to_db,
 )
 from pytest_mock import mocker
 
@@ -147,38 +149,22 @@ def test_get_rows_of_people_returns_a_record():
     ]
 
 
-def test_get_people_from_list_people_module():
+def test_load_people_to_db_on_predefined_file():
     """
-    api.helpers.list_people.get_people() should return a list of names and a phone
-    number.
+    There should be the same amount of records in the csv file that is loaded into the
+    database.
     """
+    test_files_dir = os.path.dirname(__file__)
+    test_files_dir = os.path.join(test_files_dir, "test_files")
 
-    list_of_people = list_people.get_people()
-    assert str(type(list_of_people)) == "<class 'list'>"
+    num_of_records = load_people_to_db(
+        os.path.join(test_files_dir, "fake_person_data.csv")
+    )
+    con = sqlite3.connect("fake_people.db")
+    cur = con.cursor()
+    num_of_records_in_db = [row for row in cur.execute("SELECT * FROM people")]
+    con.close()
 
-    for i, person in enumerate(list_of_people):
-        # For each person in the list, we'll assert that it should be represented by:
-        """
-        {
-        ID: PERSON_ID,
-        FULL_NAME: PERSON_FULL_NAME,
-        PHONE_NUMBER: PERSON_PHONE_NUMBER
-        }
-        """
-        # Remove the curly braces
-        person_list = person[1 : len(person) - 1].split(",")
-        assert len(person_list) == 3
+    assert num_of_records == len(num_of_records_in_db)
 
-        print(person_list[0])
-
-        # Validate full_name
-        full_name_field = person_list[1]
-        full_name = full_name_field.split(":")[1].strip()
-        assert full_name is not None
-
-        # Validate phone numeber
-        phone_number_field = person_list[2]
-        phone_number = phone_number_field.split(":")[1].strip()
-        assert phone_number.startswith("+")
-        assert len(phone_number[1:].replace(" ", "")) == 12
-        assert phone_number[1:].replace(" ", "").isnumeric()
+    os.remove("fake_people.db")
