@@ -2,7 +2,7 @@
 A file containing phone country codes as found posted on Github
 by Goles: https://gist.github.com/Goles/3196253
 
-I changed Antartica's dial_code from null to None
+I changed land Island and Antartica's dial_code from '' and null (respectively) to None
 """
 
 country_codes = [
