@@ -16,6 +16,7 @@ people = PhonebookResource()
 # things will handle all requests to the '/people' URL path
 app.add_route("/people", people, suffix="all")
 app.add_route("/people/{person_id}", people, suffix="by_id")
+app.add_route("/people/person", people)
 
 if __name__ == "__main__":
     with make_server("", 8000, app) as httpd:
