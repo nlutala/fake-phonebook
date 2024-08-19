@@ -7,7 +7,7 @@ import os
 import sqlite3
 
 
-def get_people() -> list[str]:
+def get_people() -> list[dict[str, str]]:
     """
     Returns a list of people and their phone number in the phonebook ordered in
     alphabetical order (a-z)
@@ -18,17 +18,13 @@ def get_people() -> list[str]:
     con = sqlite3.connect(path_to_db)
     cur = con.cursor()
     people = [
-        "{"
-        + ", ".join(
-            [
-                "id: " + person[0],
-                "full_name: " + person[1],
-                "phone_number: " + person[2],
-            ]
-        )
-        + "}"
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
         for person in cur.execute(
-            """SELECT id, full_name, phone_number FROM people order by full_name"""
+            "SELECT id, full_name, phone_number FROM people order by full_name"
         )
     ]
     con.close()
@@ -36,9 +32,10 @@ def get_people() -> list[str]:
     return people
 
 
-def get_person_by_id(person_id: str) -> str | None:
+def get_person_by_id(person_id: str) -> dict[str, str] | None:
     """
-    Returns a string representing a person by their id, full_name and phone_number.\n
+    Returns a dictionary representing a person by their id, full_name and
+    phone_number.\n
 
     :param - person_id (string)\n
 
@@ -50,19 +47,14 @@ def get_person_by_id(person_id: str) -> str | None:
     con = sqlite3.connect(path_to_db)
     cur = con.cursor()
     people = [
-        "{"
-        + ", ".join(
-            [
-                "id: " + person[0],
-                "full_name: " + person[1],
-                "phone_number: " + person[2],
-            ]
-        )
-        + "}"
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
         for person in cur.execute(
             f"""
-            SELECT id, full_name, phone_number FROM people
-            WHERE id = '{person_id}'
+            SELECT id, full_name, phone_number FROM people WHERE id = '{person_id}'
             """
         )
     ]
