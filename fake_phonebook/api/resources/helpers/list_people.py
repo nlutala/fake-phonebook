@@ -189,3 +189,35 @@ def post_person_to_db(person_data: dict[str, str]) -> str | None:
         return person_data["id"]
 
     return None
+
+
+def delete_person_from_db(person_data: dict[str, str]) -> dict[str, str] | None:
+    """
+    Takes a dictionary with a person's id and deletes this from the database.\n
+
+    :param - person_data (a dictionary of a person's id as a key-value pair)\n
+
+    Returns the id, full_name and phone_number of the person removed from the database
+    if the person exists in the db and they were deleted from the db without an issue.
+    Returns None if otherwise.
+    """
+    # Check that an id key-value pair was given. If not, return None
+    if person_data.get("id") is None:
+        return None
+
+    # Check that a person with this id exists in the database. If not, return None.
+    person_to_delete = get_person_by_id(person_data.get("id"))
+
+    if person_to_delete is None:
+        return None
+
+    # Now delete this person from the database
+    parent_dir = os.path.dirname(__file__).partition("api")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    cur.execute(f"delete from people where id = '{person_data.get('id')}'")
+    con.commit()
+    con.close()
+
+    return person_to_delete
