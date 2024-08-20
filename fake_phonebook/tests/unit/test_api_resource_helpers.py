@@ -22,9 +22,10 @@ def test_get_people():
     assert str(type(list_of_people)) == "<class 'list'>"
 
     for person in list_of_people:
+        print(person)
         assert len(person.keys()) == 3
 
-        # Validate that eacg person has an id
+        # Validate that each person has an id
         assert person.get("id") is not None
         assert str(type(person.get("id"))) == "<class 'str'>"
 
@@ -87,7 +88,7 @@ def test_add_people_to_db():
             }.{
                 person1_name.split(" ")[1]
             }@example.com""".lower(),
-            "+44 123456789",
+            "+44 1234567891",
             f"""www.linkedin.com/{
                 person1_name.split(" ")[0]
             }-{
@@ -104,7 +105,7 @@ def test_add_people_to_db():
             }.{
                 person2_name.split(" ")[1]
             }@example.com""".lower(),
-            "+44 123456789",
+            "+44 1234567891",
             f"""www.linkedin.com/{
                 person2_name.split(" ")[0]
             }-{
@@ -125,6 +126,15 @@ def test_add_people_to_db():
     # into the db, and someone that is not into the db, add_people_to_db returns 1
     assert add_people_to_db(people) == 1
 
+    # Remove side-effects from the test
+    parent_dir = os.path.dirname(__file__).partition("tests")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    cur.execute(f"delete from people where id in ('{people[0][0]}', '{people[1][0]}')")
+    con.commit()
+    con.close()
+
 
 def test_post_person_to_db(mocker: Mock):
     """
@@ -134,7 +144,7 @@ def test_post_person_to_db(mocker: Mock):
     full_name = f"Test {Faker().name()}"
     first_name = full_name.split(" ")[0]
     last_name = " ".join(full_name.split(" ")[1:])
-    phone_number = "+44 123456789"
+    phone_number = "+44 1234567891"
 
     # We want to enfore that the json (well, now dictionary) representing the person
     # Should have a full_name and phone_number key, value pairs.
@@ -167,3 +177,12 @@ def test_post_person_to_db(mocker: Mock):
 
     person_id = post_person_to_db(person)
     assert person_id is None
+
+    # Remove side-effects from the test
+    parent_dir = os.path.dirname(__file__).partition("tests")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    cur.execute(f"delete from people where phone_number = '{phone_number}'")
+    con.commit()
+    con.close()

@@ -105,10 +105,12 @@ def load_people_to_db(csv_file_name: str) -> int:
     """
 
     # Set initially to False as we will then check if the fake_people.db already exists
-    only_insert = True if "fake_people.db" in os.listdir() else False
+    parent_dir = os.path.dirname(__file__).partition("create_and_load")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    only_insert = True if "fake_people.db" in os.listdir(parent_dir) else False
 
     # Create a database called fake_people
-    con = sqlite3.connect("fake_people.db")
+    con = sqlite3.connect(path_to_db)
     cur = con.cursor()
 
     if only_insert is False:
