@@ -5,6 +5,8 @@ from unittest.mock import Mock
 
 from api.resources.helpers.list_people import (
     add_people_to_db,
+    delete_people_from_db,
+    delete_person_from_db,
     get_people,
     get_person_by_id,
     post_person_to_db,
@@ -22,7 +24,6 @@ def test_get_people():
     assert str(type(list_of_people)) == "<class 'list'>"
 
     for person in list_of_people:
-        print(person)
         assert len(person.keys()) == 3
 
         # Validate that each person has an id
@@ -186,3 +187,73 @@ def test_post_person_to_db(mocker: Mock):
     cur.execute(f"delete from people where phone_number = '{phone_number}'")
     con.commit()
     con.close()
+
+
+def test_delete_person_from_db(mocker: Mock):
+    """
+    api.resources.helpers.list_people.delete_person_from_db() should return the id,
+    full_name and phone_number of the person added to the database or None if the person
+    could not be deleted from the database successfully.
+    """
+    # Get a list of valid ids of people in the database
+    parent_dir = os.path.dirname(__file__).partition("tests")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    people = [
+        record
+        for record in cur.execute("SELECT id, full_name, phone_number FROM people")
+    ]
+    con.close()
+
+    # Randomly choose one of these people to test the delete_person_from_db with
+    person = choice(people)
+
+    # Instantiate a new variable p (which we will use from now on for testing)
+    # Give p a fake email (this doesn't matter), but we want to assert that if
+    # we give the delete_person_from_db() function a dictionary without an id key-value
+    # pair, we should get None.
+    p = {"email_address": "fake.email@example.com"}
+    assert delete_person_from_db(p) is None
+
+    # Now let's update p to have the id key-value pair. But this id does not exist in
+    # the database
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value=None,
+    )
+    p["id"] = "a-person-with-this-id-does-not-exist"
+    assert delete_person_from_db(p) is None
+
+    # Now let's update p to have the id key-value pair, with this id existing in
+    # the database
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value={
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        },
+    )
+    p["id"] = person[0]
+    assert delete_person_from_db(p) == {
+        "id": person[0],
+        "full_name": person[1],
+        "phone_number": person[2],
+    }
+
+    # Validate that this person no longer exists in the database
+    parent_dir = os.path.dirname(__file__).partition("tests")[0]
+    path_to_db = os.path.join(parent_dir, "fake_people.db")
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    people = [
+        record
+        for record in cur.execute(f"SELECT * FROM people WHERE id = '{p.get('id')}'")
+    ]
+    con.close()
+
+    assert len(people) == 0
+
+    # Add this person back into the database as this was only a test (undo side effects)
+    post_person_to_db(p)
