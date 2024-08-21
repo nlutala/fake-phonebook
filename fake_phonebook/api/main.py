@@ -36,9 +36,7 @@ app.add_route("/people/{person_id}", people, suffix="by_id")
 
 # Delete method (Delete)
 app.add_route("/people/remove_person", people, suffix="by_id")
-# TODO: add another delete method to delete multiple people by id (it should take a
-# list of dictionaries)
-# app.add_route("/people/remove_person", people)
+app.add_route("/people/remove_people", people)
 
 
 if __name__ == "__main__":

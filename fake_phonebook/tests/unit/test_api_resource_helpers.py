@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 from api.resources.helpers.list_people import (
     add_people_to_db,
+    delete_people_from_db,
     delete_person_from_db,
     get_people,
     get_person_by_id,
@@ -210,7 +211,7 @@ def test_delete_person_from_db(mocker: Mock):
 
     # Instantiate a new variable p (which we will use from now on for testing)
     # Give p a fake email (this doesn't matter), but we want to assert that if
-    # we give the delete_person_from_db() method a dictionary without an id key-value
+    # we give the delete_person_from_db() function a dictionary without an id key-value
     # pair, we should get None.
     p = {"email_address": "fake.email@example.com"}
     assert delete_person_from_db(p) is None

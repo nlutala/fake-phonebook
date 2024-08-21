@@ -6,6 +6,7 @@ from json import dumps, loads
 
 import falcon
 from resources.helpers.list_people import (
+    delete_people_from_db,
     delete_person_from_db,
     get_people,
     get_person_by_id,
@@ -84,3 +85,33 @@ class PhonebookResource:
                 f"of '{deleted_data.get('phone_number')}' has been removed from the "
                 "phonebook."
             )
+
+    def on_delete(self, req, resp):
+        """
+        Handles a DELETE request for deleting multiple entries in the phonebook.\n
+        The user of the api will receive a message listing the people (identified by
+        their name and phone number) have been removed from the phonebook.
+        """
+        req.content_type = falcon.MEDIA_JSON
+        people_data = loads(dumps(req.media))
+
+        deleted_data = delete_people_from_db(people_data)
+
+        if deleted_data is None:
+            resp.status = falcon.HTTP_400
+            resp.text = (
+                "Bad request. Please ensure that you have supplied a list of ids of "
+                "the people you would like to remove is given as key-value pairs, and "
+                "that these ids already exist in the phonebook."
+            )
+        else:
+            resp.status = falcon.HTTP_201
+            part_of_response = ""
+            for person in deleted_data:
+                part_of_response += (
+                    f"A person, called {person.get('full_name')}, with a phone number "
+                    f"of '{person.get('phone_number')}' has been removed from the "
+                    "phonebook.\n"
+                )
+
+            resp.text = part_of_response
