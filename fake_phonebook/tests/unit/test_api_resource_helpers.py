@@ -4,12 +4,13 @@ from random import choice
 from unittest.mock import Mock
 
 from api.resources.helpers.list_people import (
+    PATH_TO_DB,
     add_people_to_db,
-    delete_people_from_db,
     delete_person_from_db,
     get_people,
     get_person_by_id,
     post_person_to_db,
+    update_person_in_db,
 )
 from faker import Faker
 from pytest_mock import mocker
@@ -50,9 +51,7 @@ def test_get_person_by_id():
     If the person doesn't exist. Return null.
     """
     # Get a list of valid ids of people in the database
-    parent_dir = os.path.dirname(__file__).partition("tests")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     ids = [id[0] for id in cur.execute("SELECT id FROM people")]
     con.close()
@@ -128,9 +127,7 @@ def test_add_people_to_db():
     assert add_people_to_db(people) == 1
 
     # Remove side-effects from the test
-    parent_dir = os.path.dirname(__file__).partition("tests")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     cur.execute(f"delete from people where id in ('{people[0][0]}', '{people[1][0]}')")
     con.commit()
@@ -180,9 +177,7 @@ def test_post_person_to_db(mocker: Mock):
     assert person_id is None
 
     # Remove side-effects from the test
-    parent_dir = os.path.dirname(__file__).partition("tests")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     cur.execute(f"delete from people where phone_number = '{phone_number}'")
     con.commit()
@@ -196,9 +191,7 @@ def test_delete_person_from_db(mocker: Mock):
     could not be deleted from the database successfully.
     """
     # Get a list of valid ids of people in the database
-    parent_dir = os.path.dirname(__file__).partition("tests")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     people = [
         record
@@ -243,9 +236,7 @@ def test_delete_person_from_db(mocker: Mock):
     }
 
     # Validate that this person no longer exists in the database
-    parent_dir = os.path.dirname(__file__).partition("tests")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     people = [
         record
@@ -257,3 +248,113 @@ def test_delete_person_from_db(mocker: Mock):
 
     # Add this person back into the database as this was only a test (undo side effects)
     post_person_to_db(p)
+
+
+def test_update_person_in_db(mocker: Mock):
+    """
+    api.resources.helpers.list_people.update_person_in_db() should return the id,
+    (new) full_name and/or (new) phone_number of the person added to the database or
+    None if the person could not be deleted from the database successfully.
+    """
+    # Get a random person from the database
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        record
+        for record in cur.execute("SELECT id, full_name, phone_number FROM people")
+    ]
+    con.close()
+    original_person = choice(people)
+
+    # If the user of the api does not send an id key-value pair, update_person_in_db()
+    # should return None
+    person = {"email_address": "another.fake.email@example.com"}
+    assert update_person_in_db(person) is None
+
+    # If the user of the api sends an id key-value pair, but the id does not exist in
+    # the database, update_person_in_db() should return None
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value=None,
+    )
+    person["id"] = "this-id-doesnt-exist"
+    assert update_person_in_db(person) is None
+
+    # If the user of the api sends an id key-value pair, and the id does exist in
+    # the database, but they have not added key-value pairs for a full_name or phone
+    # number, update_person_in_db() should return None
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value={
+            "id": original_person[0],
+            "full_name": original_person[1],
+            "phone_number": original_person[2],
+        },
+    )
+    person["id"] = original_person[0]
+    assert update_person_in_db(person) is None
+
+    # If the user of the api sends an id key-value pair, and the id does exist in
+    # the database, they have added a key-value pair for a full_name but not a phone
+    # number, update_person_in_db() should return a dictionary with the person's id,
+    # updated full_name and original phone number
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value={
+            "id": original_person[0],
+            "full_name": "Test Person",
+            "phone_number": original_person[2],
+        },
+    )
+    person["full_name"] = "Test Person"
+    assert update_person_in_db(person) == {
+        "id": original_person[0],
+        "full_name": "Test Person",
+        "phone_number": original_person[2],
+    }
+
+    # If the user of the api sends an id key-value pair, and the id does exist in
+    # the database, they have not added a key-value pair for a full_name but they have
+    # for a phone number, update_person_in_db() should return a dictionary with the
+    # person's id, original full_name and updated phone number
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value={
+            "id": original_person[0],
+            "full_name": original_person[1],
+            "phone_number": "+44 1234567890",
+        },
+    )
+    person["phone_number"] = "+44 1234567890"
+    assert update_person_in_db(person) == {
+        "id": original_person[0],
+        "full_name": original_person[1],
+        "phone_number": "+44 1234567890",
+    }
+
+    # If the user of the api sends an id key-value pair, and the id does exist in
+    # the database, they have added a key-value pair for a full_name and phone number,
+    # update_person_in_db() should return a dictionary with the person's id,
+    # updated full_name and updated phone number
+    person["full_name"] = "Test Person"
+    person["phone_number"] = "+44 1234567890"
+
+    mocker.patch(
+        "api.resources.helpers.list_people.get_person_by_id",
+        return_value={
+            "id": original_person[0],
+            "full_name": "Test Person",
+            "phone_number": "+44 1234567890",
+        },
+    )
+    assert update_person_in_db(person) == {
+        "id": original_person[0],
+        "full_name": "Test Person",
+        "phone_number": "+44 1234567890",
+    }
+
+    # Undo side effects
+    delete_person_from_db({"id": original_person[0]})
+    post_person_to_db(
+        {"full_name": original_person[1], "phone_number": original_person[2]}
+    )
