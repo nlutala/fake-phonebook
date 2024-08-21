@@ -17,8 +17,6 @@ people = PhonebookResource()
 
 # Post methods (Create)
 app.add_route("/people/add_person", people)  # add suffix="by_id"
-# TODO: Add another post method to add multiple people at once
-# app.add_route("/people/add_people", people) --> make this the on_post() method
 
 # Get methods (Read)
 app.add_route("/people", people, suffix="all")
@@ -33,6 +31,9 @@ app.add_route("/people/{person_id}", people, suffix="by_id")
 # app.add_route(
 # "/people/search?q=last+name+starts+with={letter}", people, suffix="by_last_name"
 # )
+
+# Update method (Update)
+app.add_route("/people/edit_person", people)
 
 # Delete method (Delete)
 app.add_route("/people/remove_person", people, suffix="by_id")

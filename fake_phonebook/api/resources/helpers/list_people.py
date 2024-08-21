@@ -7,16 +7,16 @@ import os
 import sqlite3
 from uuid import uuid4
 
+PARENT_DIR = os.path.dirname(__file__).partition("api")[0]
+PATH_TO_DB = os.path.join(PARENT_DIR, "fake_people.db")
+
 
 def get_people() -> list[dict[str, str]]:
     """
     Returns a list of people and their phone number in the phonebook ordered in
     alphabetical order (a-z)
     """
-
-    parent_dir = os.path.dirname(__file__).partition("api")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     people = [
         {
@@ -42,10 +42,7 @@ def get_person_by_id(person_id: str) -> dict[str, str] | None:
 
     If a person is not associated with this id, the function returns None.
     """
-
-    parent_dir = os.path.dirname(__file__).partition("api")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     people = [
         {
@@ -74,14 +71,11 @@ def add_people_to_db(person_row: list[tuple]) -> int:
 
     returns the number of rows written to the database
     """
-
     # Set initially to False as we will then check if the fake_people.db already exists
-    parent_dir = os.path.dirname(__file__).partition("api")[0]
-    only_insert = True if "fake_people.db" in os.listdir(parent_dir) else False
+    only_insert = True if "fake_people.db" in os.listdir(PARENT_DIR) else False
 
     # Create a database called fake_people
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
 
     if only_insert is False:
@@ -117,7 +111,6 @@ def add_people_to_db(person_row: list[tuple]) -> int:
             people_to_insert.append(tuple(record))
 
     if len(people_to_insert) != 0:
-        print(people_to_insert)
         # Insert the data about the fake people from the tuple into the table
         cur.executemany(
             "INSERT INTO people VALUES(?, ?, ?, ?, ?, ?, ?)", people_to_insert
@@ -212,9 +205,7 @@ def delete_person_from_db(person_data: dict[str, str]) -> dict[str, str] | None:
         return None
 
     # Now delete this person from the database
-    parent_dir = os.path.dirname(__file__).partition("api")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     cur.execute(f"delete from people where id = '{person_data.get('id')}'")
     con.commit()
@@ -263,12 +254,59 @@ def delete_people_from_db(
     group_of_ids = ", ".join([f"'{person.get('id')}'" for person in deleted_people])
 
     # Now delete these people from the database
-    parent_dir = os.path.dirname(__file__).partition("api")[0]
-    path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
+    con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
     cur.execute(f"delete from people where id in ({group_of_ids})")
     con.commit()
     con.close()
 
     return deleted_people
+
+
+def update_person_in_db(person_data: dict[str, str]) -> dict[str, str] | None:
+    """
+    Takes a dictionary with a person's id, full_name and/or phone_number and updates
+    this person's details in the database.\n
+
+    :param - person_data (a dictionary of a person's id as a key-value pair)\n
+
+    Returns the id, (new) full_name and (new) phone_number of the person updated in the
+    database if the person exists in the db and their details were updated without an
+    issue. Returns None if otherwise.
+    """
+    # Check if the id of the person is given
+    if person_data.get("id") is None:
+        return None
+
+    # Check if the id of the person exists in the db
+    if get_person_by_id(person_data.get("id")) is None:
+        return None
+
+    # Check that the full_name and/or phone_number to update is given
+    full_name = person_data.get("full_name")
+    phone_number = person_data.get("phone_number")
+
+    if [full_name, phone_number] == [None, None]:
+        return None
+
+    # Format the SET clause for the UPDATE statement
+    set_clause = "SET "
+    set_full_name = f"full_name = '{full_name}', " if full_name is not None else ""
+    set_phone_number = (
+        f"phone_number = '{phone_number}'" if phone_number is not None else ""
+    )
+    set_clause += set_full_name
+    set_clause += set_phone_number
+    set_clause = (
+        set_clause[: len(set_clause) - 2] if set_clause.endswith(", ") else set_clause
+    )
+
+    # Now update the details after confirming that the id, full_name and phone_number
+    # were given as key-value pairs
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    cur.execute(f"UPDATE people {set_clause} WHERE id = '{person_data.get('id')}'")
+    con.commit()
+    con.close()
+
+    return get_person_by_id(person_data.get("id"))

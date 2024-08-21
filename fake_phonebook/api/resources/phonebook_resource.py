@@ -11,6 +11,7 @@ from resources.helpers.list_people import (
     get_people,
     get_person_by_id,
     post_person_to_db,
+    update_person_in_db,
 )
 
 
@@ -63,8 +64,8 @@ class PhonebookResource:
     def on_delete_by_id(self, req, resp):
         """
         Handles a DELETE request for deleting an entry in the phonebook.\n
-        The user of the api will receive a message saying that a person (identified) by
-        their name and phone number has been removed from the phonebook.
+        The user of the api will receive a message saying that a person (identified by
+        their name and phone number) has been removed from the phonebook.
         """
         req.content_type = falcon.MEDIA_JSON
         person_data = loads(dumps(req.media))
@@ -115,3 +116,30 @@ class PhonebookResource:
                 )
 
             resp.text = part_of_response
+
+    def on_put(self, req, resp):
+        """
+        Handles a PUT request for updating information about someone in the phonebook
+        (either full_name or phone_number).\n
+        The user of the api will receive a message saying that a person (identified by
+        their id is has a (new) full_name and (new) phone number.
+        """
+        req.content_type = falcon.MEDIA_JSON
+        person_data = loads(dumps(req.media))
+
+        updated_person = update_person_in_db(person_data)
+
+        if updated_person is None:
+            resp.status = falcon.HTTP_400
+            resp.text = (
+                "Bad request. Please ensure that the 'id', 'full_name' and "
+                "'phone_number' key-value pairs are present and that this person you "
+                "would like to update the details of exists in the phonebook. "
+            )
+        else:
+            resp.status = falcon.HTTP_201
+            resp.text = (
+                f"The person with an id of {updated_person.get('id')} was updated to "
+                f"be called {updated_person.get('full_name')}, with a phone number of: "
+                f"{updated_person.get('phone_number')}"
+            )
