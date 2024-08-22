@@ -11,56 +11,7 @@ PARENT_DIR = os.path.dirname(__file__).partition("api")[0]
 PATH_TO_DB = os.path.join(PARENT_DIR, "fake_people.db")
 
 
-def get_people() -> list[dict[str, str]]:
-    """
-    Returns a list of people and their phone number in the phonebook ordered in
-    alphabetical order (a-z)
-    """
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    people = [
-        {
-            "id": person[0],
-            "full_name": person[1],
-            "phone_number": person[2],
-        }
-        for person in cur.execute(
-            "SELECT id, full_name, phone_number FROM people order by full_name"
-        )
-    ]
-    con.close()
-
-    return people
-
-
-def get_person_by_id(person_id: str) -> dict[str, str] | None:
-    """
-    Returns a dictionary representing a person by their id, full_name and
-    phone_number.\n
-
-    :param - person_id (string)\n
-
-    If a person is not associated with this id, the function returns None.
-    """
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    people = [
-        {
-            "id": person[0],
-            "full_name": person[1],
-            "phone_number": person[2],
-        }
-        for person in cur.execute(
-            f"""
-            SELECT id, full_name, phone_number FROM people WHERE id = '{person_id}'
-            """
-        )
-    ]
-    con.close()
-
-    return people[0] if len(people) == 1 else None
-
-
+# CREATE Operations
 def add_people_to_db(person_row: list[tuple]) -> int:
     """
     Writes data about fake people from a list of tuples (where each tuple is a person's
@@ -184,6 +135,143 @@ def post_person_to_db(person_data: dict[str, str]) -> str | None:
     return None
 
 
+# READ Operations
+def get_people() -> list[dict[str, str]]:
+    """
+    Returns a list of people and their phone number in the phonebook ordered in
+    alphabetical order (a-z)
+    """
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
+        for person in cur.execute(
+            "SELECT id, full_name, phone_number FROM people order by full_name"
+        )
+    ]
+    con.close()
+
+    return people
+
+
+def get_person_by_id(person_id: str) -> dict[str, str] | None:
+    """
+    Returns a dictionary representing a person by their id, full_name and
+    phone_number.\n
+
+    :param - person_id (string)\n
+
+    If a person is not associated with this id, the function returns None.
+    """
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
+        for person in cur.execute(
+            f"""
+            SELECT id, full_name, phone_number FROM people WHERE id = '{person_id}'
+            """
+        )
+    ]
+    con.close()
+
+    return people[0] if len(people) == 1 else None
+
+
+def get_people_starting_with(string: str) -> list[dict[str, str]] | None:
+    """
+    Returns a list of people (id, full_name and phone_number) in the phonebook ordered
+    in that start with a specific string, in alphabetical order (a-z).
+    """
+    # Ensure that the letter is at least 1 character long
+    if len(string) < 1:
+        return None
+
+    # We don't care about whether the letter is upper or lowercase as I will just add
+    # .lower() to the letter anyway
+
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
+        for person in cur.execute(
+            f"""
+            SELECT id, full_name, phone_number FROM people
+            WHERE full_name LIKE '{string.lower()}%'
+            order by full_name
+            """.strip().replace(
+                "\n", " "
+            )
+        )
+    ]
+    con.close()
+
+    return people if len(people) != 0 else None
+
+
+# UPDATE Operations
+def update_person_in_db(person_data: dict[str, str]) -> dict[str, str] | None:
+    """
+    Takes a dictionary with a person's id, full_name and/or phone_number and updates
+    this person's details in the database.\n
+
+    :param - person_data (a dictionary of a person's id as a key-value pair)\n
+
+    Returns the id, (new) full_name and (new) phone_number of the person updated in the
+    database if the person exists in the db and their details were updated without an
+    issue. Returns None if otherwise.
+    """
+    # Check if the id of the person is given
+    if person_data.get("id") is None:
+        return None
+
+    # Check if the id of the person exists in the db
+    if get_person_by_id(person_data.get("id")) is None:
+        return None
+
+    # Check that the full_name and/or phone_number to update is given
+    full_name = person_data.get("full_name")
+    phone_number = person_data.get("phone_number")
+
+    if [full_name, phone_number] == [None, None]:
+        return None
+
+    # Format the SET clause for the UPDATE statement
+    set_clause = "SET "
+    set_full_name = f"full_name = '{full_name}', " if full_name is not None else ""
+    set_phone_number = (
+        f"phone_number = '{phone_number}'" if phone_number is not None else ""
+    )
+    set_clause += set_full_name
+    set_clause += set_phone_number
+    set_clause = (
+        set_clause[: len(set_clause) - 2] if set_clause.endswith(", ") else set_clause
+    )
+
+    # Now update the details after confirming that the id, full_name and phone_number
+    # were given as key-value pairs
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    cur.execute(f"UPDATE people {set_clause} WHERE id = '{person_data.get('id')}'")
+    con.commit()
+    con.close()
+
+    return get_person_by_id(person_data.get("id"))
+
+
+# DELETE Operations
 def delete_person_from_db(person_data: dict[str, str]) -> dict[str, str] | None:
     """
     Takes a dictionary with a person's id and deletes this from the database.\n
@@ -261,52 +349,3 @@ def delete_people_from_db(
     con.close()
 
     return deleted_people
-
-
-def update_person_in_db(person_data: dict[str, str]) -> dict[str, str] | None:
-    """
-    Takes a dictionary with a person's id, full_name and/or phone_number and updates
-    this person's details in the database.\n
-
-    :param - person_data (a dictionary of a person's id as a key-value pair)\n
-
-    Returns the id, (new) full_name and (new) phone_number of the person updated in the
-    database if the person exists in the db and their details were updated without an
-    issue. Returns None if otherwise.
-    """
-    # Check if the id of the person is given
-    if person_data.get("id") is None:
-        return None
-
-    # Check if the id of the person exists in the db
-    if get_person_by_id(person_data.get("id")) is None:
-        return None
-
-    # Check that the full_name and/or phone_number to update is given
-    full_name = person_data.get("full_name")
-    phone_number = person_data.get("phone_number")
-
-    if [full_name, phone_number] == [None, None]:
-        return None
-
-    # Format the SET clause for the UPDATE statement
-    set_clause = "SET "
-    set_full_name = f"full_name = '{full_name}', " if full_name is not None else ""
-    set_phone_number = (
-        f"phone_number = '{phone_number}'" if phone_number is not None else ""
-    )
-    set_clause += set_full_name
-    set_clause += set_phone_number
-    set_clause = (
-        set_clause[: len(set_clause) - 2] if set_clause.endswith(", ") else set_clause
-    )
-
-    # Now update the details after confirming that the id, full_name and phone_number
-    # were given as key-value pairs
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    cur.execute(f"UPDATE people {set_clause} WHERE id = '{person_data.get('id')}'")
-    con.commit()
-    con.close()
-
-    return get_person_by_id(person_data.get("id"))

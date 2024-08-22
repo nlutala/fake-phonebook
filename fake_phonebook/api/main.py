@@ -21,16 +21,7 @@ app.add_route("/people/add_person", people)  # add suffix="by_id"
 # Get methods (Read)
 app.add_route("/people", people, suffix="all")
 app.add_route("/people/{person_id}", people, suffix="by_id")
-# TODO: add another get method to get everyone in the db whose first_name starts with
-# a letter e.g.
-# app.add_route(
-# "/people/search?q=first+name+starts+with={letter}", people, suffix="by_first_name"
-# )
-# TODO: add another get method to get everyone in the db whose last_name starts with
-# a letter e.g.
-# app.add_route(
-# "/people/search?q=last+name+starts+with={letter}", people, suffix="by_last_name"
-# )
+app.add_route("/people/name_starts_with={letter_or_name}", people, suffix="starts_with")
 
 # Update method (Update)
 app.add_route("/people/edit_person", people)
