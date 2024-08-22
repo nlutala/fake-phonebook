@@ -11,7 +11,7 @@ PARENT_DIR = os.path.dirname(__file__).partition("api")[0]
 PATH_TO_DB = os.path.join(PARENT_DIR, "fake_people.db")
 
 
-# CREATE Operations
+# =============================== CREATE Operations ===================================
 def add_people_to_db(person_row: list[tuple]) -> int:
     """
     Writes data about fake people from a list of tuples (where each tuple is a person's
@@ -135,7 +135,7 @@ def post_person_to_db(person_data: dict[str, str]) -> str | None:
     return None
 
 
-# READ Operations
+# ================================= READ Operations ===================================
 def get_people() -> list[dict[str, str]]:
     """
     Returns a list of people and their phone number in the phonebook ordered in
@@ -191,12 +191,13 @@ def get_people_starting_with(string: str) -> list[dict[str, str]] | None:
     Returns a list of people (id, full_name and phone_number) in the phonebook ordered
     in that start with a specific string, in alphabetical order (a-z).
     """
+    # We don't care about whether the letter is upper or lowercase as I will just add
+    # .lower() to the letter anyway
+    string = string.lower().strip()
+
     # Ensure that the letter is at least 1 character long
     if len(string) < 1:
         return None
-
-    # We don't care about whether the letter is upper or lowercase as I will just add
-    # .lower() to the letter anyway
 
     con = sqlite3.connect(PATH_TO_DB)
     cur = con.cursor()
@@ -209,7 +210,7 @@ def get_people_starting_with(string: str) -> list[dict[str, str]] | None:
         for person in cur.execute(
             f"""
             SELECT id, full_name, phone_number FROM people
-            WHERE full_name LIKE '{string.lower()}%'
+            WHERE full_name LIKE '{string}%'
             order by full_name
             """.strip().replace(
                 "\n", " "
@@ -221,7 +222,7 @@ def get_people_starting_with(string: str) -> list[dict[str, str]] | None:
     return people if len(people) != 0 else None
 
 
-# UPDATE Operations
+# ================================ UPDATE Operations ==================================
 def update_person_in_db(person_data: dict[str, str]) -> dict[str, str] | None:
     """
     Takes a dictionary with a person's id, full_name and/or phone_number and updates
@@ -271,7 +272,7 @@ def update_person_in_db(person_data: dict[str, str]) -> dict[str, str] | None:
     return get_person_by_id(person_data.get("id"))
 
 
-# DELETE Operations
+# ================================= DELETE Operations =================================
 def delete_person_from_db(person_data: dict[str, str]) -> dict[str, str] | None:
     """
     Takes a dictionary with a person's id and deletes this from the database.\n
