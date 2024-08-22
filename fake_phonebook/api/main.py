@@ -1,6 +1,3 @@
-# examples/things.py
-
-# Let's get this party started!
 from wsgiref.simple_server import make_server
 
 import falcon
@@ -13,10 +10,8 @@ app = falcon.App()
 # Resources are represented by long-lived class instances
 people = PhonebookResource()
 
-# things will handle all requests to the '/people' URL path
-
 # Post methods (Create)
-app.add_route("/people/add_person", people)  # add suffix="by_id"
+app.add_route("/people/add_person", people)
 
 # Get methods (Read)
 app.add_route("/people", people, suffix="all")
