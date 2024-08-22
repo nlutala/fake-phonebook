@@ -7,8 +7,7 @@ import os
 import sqlite3
 from uuid import uuid4
 
-PARENT_DIR = os.path.dirname(__file__).partition("api")[0]
-PATH_TO_DB = os.path.join(PARENT_DIR, "fake_people.db")
+from resources.helpers.env import PARENT_DIR, PATH_TO_DB
 
 
 # =============================== CREATE Operations ===================================
