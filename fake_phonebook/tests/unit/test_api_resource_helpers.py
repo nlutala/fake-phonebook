@@ -4,16 +4,15 @@ from random import choice
 from string import ascii_lowercase
 from unittest.mock import Mock
 
-from api.resources.helpers.list_people import (
-    PATH_TO_DB,
-    add_people_to_db,
-    delete_person_from_db,
+from api.resources.helpers.env import PATH_TO_DB
+from api.resources.http_methods.delete import delete_person_from_db
+from api.resources.http_methods.get import (
     get_people,
     get_people_starting_with,
     get_person_by_id,
-    post_person_to_db,
-    update_person_in_db,
 )
+from api.resources.http_methods.post import add_people_to_db, post_person_to_db
+from api.resources.http_methods.update import update_person_in_db
 from faker import Faker
 from pytest_mock import mocker
 
@@ -107,7 +106,7 @@ def test_post_person_to_db(mocker: Mock):
     assert post_person_to_db(person) is None
 
     mocker.patch(
-        "api.resources.helpers.list_people.add_people_to_db",
+        "api.resources.http_methods.post.add_people_to_db",
         return_value=1,
     )
 
@@ -122,7 +121,7 @@ def test_post_person_to_db(mocker: Mock):
     # Now if we try to post this person again, post_person_to_db should return None,
     # because they now exist in the db
     mocker.patch(
-        "api.resources.helpers.list_people.add_people_to_db",
+        "api.resources.http_methods.post.add_people_to_db",
         return_value=0,
     )
 
@@ -236,7 +235,7 @@ def test_update_person_in_db(mocker: Mock):
     # If the user of the api sends an id key-value pair, but the id does not exist in
     # the database, update_person_in_db() should return None
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value=None,
     )
     person["id"] = "this-id-doesnt-exist"
@@ -246,7 +245,7 @@ def test_update_person_in_db(mocker: Mock):
     # the database, but they have not added key-value pairs for a full_name or phone
     # number, update_person_in_db() should return None
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value={
             "id": original_person[0],
             "full_name": original_person[1],
@@ -261,7 +260,7 @@ def test_update_person_in_db(mocker: Mock):
     # number, update_person_in_db() should return a dictionary with the person's id,
     # updated full_name and original phone number
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value={
             "id": original_person[0],
             "full_name": "Test Person",
@@ -280,7 +279,7 @@ def test_update_person_in_db(mocker: Mock):
     # for a phone number, update_person_in_db() should return a dictionary with the
     # person's id, original full_name and updated phone number
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value={
             "id": original_person[0],
             "full_name": original_person[1],
@@ -288,6 +287,7 @@ def test_update_person_in_db(mocker: Mock):
         },
     )
     person["phone_number"] = "+44 1234567890"
+    person["full_name"] = original_person[1]
     assert update_person_in_db(person) == {
         "id": original_person[0],
         "full_name": original_person[1],
@@ -302,7 +302,7 @@ def test_update_person_in_db(mocker: Mock):
     person["phone_number"] = "+44 1234567890"
 
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value={
             "id": original_person[0],
             "full_name": "Test Person",
@@ -351,7 +351,7 @@ def test_delete_person_from_db(mocker: Mock):
     # Now let's update p to have the id key-value pair. But this id does not exist in
     # the database
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value=None,
     )
     p["id"] = "a-person-with-this-id-does-not-exist"
@@ -360,7 +360,7 @@ def test_delete_person_from_db(mocker: Mock):
     # Now let's update p to have the id key-value pair, with this id existing in
     # the database
     mocker.patch(
-        "api.resources.helpers.list_people.get_person_by_id",
+        "api.resources.http_methods.get.get_person_by_id",
         return_value={
             "id": person[0],
             "full_name": person[1],

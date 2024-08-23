@@ -5,15 +5,17 @@ A resource that users can call to retrieve all the people in the phonebook
 from json import dumps, loads
 
 import falcon
-from resources.helpers.list_people import (
+from api.resources.http_methods.delete import (
     delete_people_from_db,
     delete_person_from_db,
+)
+from api.resources.http_methods.get import (
     get_people,
     get_people_starting_with,
     get_person_by_id,
-    post_person_to_db,
-    update_person_in_db,
 )
+from api.resources.http_methods.post import post_person_to_db
+from api.resources.http_methods.update import update_person_in_db
 
 
 # Falcon follows the REST architectural style, meaning (among
