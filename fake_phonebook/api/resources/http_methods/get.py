@@ -1,7 +1,6 @@
 import sqlite3
 
-from api.adapters.env import PATH_TO_DB
-from api.adapters.fake_phonebook_db import FakePhonebookDatabase
+from api.resources.helpers.env import PATH_TO_DB
 
 
 def get_people() -> list[dict[str, str]]:
@@ -9,7 +8,21 @@ def get_people() -> list[dict[str, str]]:
     Returns a list of people and their phone number in the phonebook ordered in
     alphabetical order (a-z)
     """
-    return FakePhonebookDatabase().select(["*"])
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
+        for person in cur.execute(
+            "SELECT id, full_name, phone_number FROM people order by full_name"
+        )
+    ]
+    con.close()
+
+    return people
 
 
 def get_person_by_id(person_id: str) -> dict[str, str] | None:
@@ -21,7 +34,22 @@ def get_person_by_id(person_id: str) -> dict[str, str] | None:
 
     If a person is not associated with this id, the function returns None.
     """
-    people = FakePhonebookDatabase().select(["*"], f"WHERE id = '{person_id}'")
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
+        for person in cur.execute(
+            f"""
+            SELECT id, full_name, phone_number FROM people WHERE id = '{person_id}'
+            """
+        )
+    ]
+    con.close()
+
     return people[0] if len(people) == 1 else None
 
 
@@ -38,6 +66,24 @@ def get_people_starting_with(string: str) -> list[dict[str, str]] | None:
     if len(string) < 1:
         return None
 
-    people = FakePhonebookDatabase().select_starting_with(string)
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    people = [
+        {
+            "id": person[0],
+            "full_name": person[1],
+            "phone_number": person[2],
+        }
+        for person in cur.execute(
+            f"""
+            SELECT id, full_name, phone_number FROM people
+            WHERE full_name LIKE '{string}%'
+            order by full_name
+            """.strip().replace(
+                "\n", " "
+            )
+        )
+    ]
+    con.close()
 
     return people if len(people) != 0 else None

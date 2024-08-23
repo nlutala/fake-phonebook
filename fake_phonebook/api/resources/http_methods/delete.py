@@ -1,7 +1,6 @@
 import sqlite3
 
-from api.adapters.env import PATH_TO_DB
-from api.adapters.fake_phonebook_db import FakePhonebookDatabase
+from api.resources.helpers.env import PATH_TO_DB
 from api.resources.http_methods.get import get_person_by_id
 
 
@@ -26,7 +25,11 @@ def delete_person_from_db(person_data: dict[str, str]) -> dict[str, str] | None:
         return None
 
     # Now delete this person from the database
-    FakePhonebookDatabase().delete(f"where id = '{person_data.get('id')}'")
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    cur.execute(f"delete from people where id = '{person_data.get('id')}'")
+    con.commit()
+    con.close()
 
     return person_to_delete
 
@@ -71,6 +74,10 @@ def delete_people_from_db(
     group_of_ids = ", ".join([f"'{person.get('id')}'" for person in deleted_people])
 
     # Now delete these people from the database
-    FakePhonebookDatabase().delete(f"where id in ({group_of_ids})")
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    cur.execute(f"delete from people where id in ({group_of_ids})")
+    con.commit()
+    con.close()
 
     return deleted_people

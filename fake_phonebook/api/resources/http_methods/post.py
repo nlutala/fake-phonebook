@@ -2,8 +2,7 @@ import os
 import sqlite3
 from uuid import uuid4
 
-from api.adapters.env import PARENT_DIR, PATH_TO_DB
-from api.adapters.fake_phonebook_db import FakePhonebookDatabase
+from api.resources.helpers.env import PARENT_DIR, PATH_TO_DB
 
 
 def add_people_to_db(person_row: list[tuple]) -> int:
@@ -57,7 +56,11 @@ def add_people_to_db(person_row: list[tuple]) -> int:
 
     if len(people_to_insert) != 0:
         # Insert the data about the fake people from the tuple into the table
-        FakePhonebookDatabase().insert(people_to_insert)
+        cur.executemany(
+            "INSERT INTO people VALUES(?, ?, ?, ?, ?, ?, ?)", people_to_insert
+        )
+        con.commit()
+        con.close()
 
     return len(people_to_insert)
 

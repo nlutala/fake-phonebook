@@ -1,7 +1,6 @@
 import sqlite3
 
-from api.adapters.env import PATH_TO_DB
-from api.adapters.fake_phonebook_db import FakePhonebookDatabase
+from api.resources.helpers.env import PATH_TO_DB
 from api.resources.http_methods.get import get_person_by_id
 
 
@@ -43,10 +42,12 @@ def update_person_in_db(person_data: dict[str, str]) -> dict[str, str] | None:
         set_clause[: len(set_clause) - 2] if set_clause.endswith(", ") else set_clause
     )
 
-    where_clause = f"WHERE id = '{person_data.get('id')}'"
-
     # Now update the details after confirming that the id, full_name and phone_number
     # were given as key-value pairs
-    FakePhonebookDatabase().update(set_clause, where_clause)
+    con = sqlite3.connect(PATH_TO_DB)
+    cur = con.cursor()
+    cur.execute(f"UPDATE people {set_clause} WHERE id = '{person_data.get('id')}'")
+    con.commit()
+    con.close()
 
     return get_person_by_id(person_data.get("id"))
