@@ -1,7 +1,7 @@
 from wsgiref.simple_server import make_server
 
 import falcon
-from resources.phonebook_resource import PhonebookResource
+from api.resources.phonebook_resource import PhonebookResource
 
 # falcon.App instances are callable WSGI apps
 # in larger applications the app is created in a separate file
