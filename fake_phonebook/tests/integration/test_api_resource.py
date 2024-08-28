@@ -4,7 +4,6 @@ import pytest
 from api.resources.http_methods.delete import delete_people_from_db
 from api.resources.http_methods.get import get_people, get_person_by_id
 from api.resources.http_methods.post import post_person_to_db
-from pytest_mock import mocker
 
 
 def test_delete_people_from_db():
