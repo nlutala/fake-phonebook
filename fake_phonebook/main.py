@@ -10,20 +10,13 @@ app = falcon.App()
 # Resources are represented by long-lived class instances
 people = PhonebookResource()
 
-# Post methods (Create)
-app.add_route("/people/add_person", people)
+# Supported operations are: Create (POST), Read (GET - everyone in the resource),
+# Delete (DELETE - multiple people)
+app.add_route("/people", people)
 
-# Get methods (Read)
-app.add_route("/people", people, suffix="all")
+# Supported operations are: Read (GET - a single person in the resource), Update (PUT),
+# Delete (DELETE - a single person)
 app.add_route("/people/{person_id}", people, suffix="by_id")
-app.add_route("/people/name_starts_with={letter_or_name}", people, suffix="starts_with")
-
-# Update method (Update)
-app.add_route("/people/edit_person", people)
-
-# Delete method (Delete)
-app.add_route("/people/remove_person", people, suffix="by_id")
-app.add_route("/people/remove_people", people)
 
 
 if __name__ == "__main__":
