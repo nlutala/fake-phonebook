@@ -1,15 +1,18 @@
+from random import choice
 from unittest.mock import Mock
 
 import pytest
-from api.resources.http_methods.delete import delete_people_from_db
+from api.resources.http_methods.delete import (
+    delete_people_from_db,
+    delete_person_from_db,
+)
 from api.resources.http_methods.get import get_people, get_person_by_id
 from api.resources.http_methods.post import post_person_to_db
-from pytest_mock import mocker
 
 
 def test_delete_people_from_db():
     """
-    api.resources.helpers.list_people.delete_people_from_db() should return a list of
+    api.resources.http_methods.delete.delete_people_from_db() should return a list of
     dictionaries consisting the id, full_name and phone_number of the people deleted
     from the database as key-value pairs or None if the people could not be deleted
     from the database successfully.
@@ -94,3 +97,39 @@ def test_delete_people_from_db():
     assert get_person_by_id(person_1_id) is None
     assert get_person_by_id(person_2_id) is None
     assert get_person_by_id(person_3_id) is None
+
+
+def test_delete_person_from_db():
+    """
+    api.resources.http_methods.delete.delete_person_from_db() should return a
+    dictionary consisting the id, full_name and phone_number of the person deleted
+    from the database as key-value pairs or None if the people could not be deleted
+    from the database successfully.
+    """
+    people_before = get_people()
+    person = choice(people_before)
+    person_id = person.get("id")
+    person_incorrect_id = person_id + "-incorrect"
+    person["id"] = person_incorrect_id
+
+    # Step 1. Assert that the person was not deleted if the id of the person is not
+    # correct.
+    delete_person_from_db(person) is None
+    assert len(get_people()) == len(people_before)
+
+    # Step 2. Assert that the person is deleted from the db if the correct id is
+    # in the dictionary passed through as a parameter
+    person["id"] = person_id
+
+    delete_person_from_db(person) == person
+    assert len(get_people()) == len(people_before) - 1
+
+    # Add person back to the db (they'll have a new id but it's fine)
+    post_person_to_db(
+        {
+            "full_name": person.get("full_name"),
+            "phone_number": person.get("phone_number"),
+        }
+    )
+
+    assert len(get_people()) == len(people_before)
