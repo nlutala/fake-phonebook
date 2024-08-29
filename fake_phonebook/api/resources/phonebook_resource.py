@@ -49,7 +49,7 @@ class PhonebookResource:
             )
 
     # Get methods (Read)
-    def on_get_all(self, req, resp):
+    def on_get(self, req, resp):
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
         resp.content_type = falcon.MEDIA_JSON
@@ -66,11 +66,10 @@ class PhonebookResource:
             resp.status = falcon.HTTP_200
             resp.media = get_person_by_id(person_id)
 
+    """
     def on_get_starts_with(self, req, resp, letter_or_name: str):
-        """
-        Handles a GET request to retrieve people in the phonebook who's name starts with
-        a chosen string.
-        """
+        # Handles a GET request to retrieve people in the phonebook who's name starts
+        # with a chosen string.
         resp.content_type = falcon.MEDIA_JSON
 
         if get_people_starting_with(letter_or_name) is None:
@@ -82,9 +81,10 @@ class PhonebookResource:
         else:
             resp.status = falcon.HTTP_200
             resp.media = get_people_starting_with(letter_or_name)
+    """
 
     # Update method (Update)
-    def on_put(self, req, resp):
+    def on_put_by_id(self, req, resp, person_id: str):
         """
         Handles a PUT request for updating information about someone in the phonebook
         (either full_name or phone_number).\n
@@ -93,6 +93,7 @@ class PhonebookResource:
         """
         req.content_type = falcon.MEDIA_JSON
         person_data = loads(dumps(req.media))
+        person_data["id"] = person_id
 
         updated_person = update_person_in_db(person_data)
 
@@ -112,15 +113,13 @@ class PhonebookResource:
             )
 
     # Delete method (Delete)
-    def on_delete_by_id(self, req, resp):
+    def on_delete_by_id(self, req, resp, person_id: str):
         """
         Handles a DELETE request for deleting an entry in the phonebook.\n
         The user of the api will receive a message saying that a person (identified by
         their name and phone number) has been removed from the phonebook.
         """
-        req.content_type = falcon.MEDIA_JSON
-        person_data = loads(dumps(req.media))
-
+        person_data = get_person_by_id(person_id)
         deleted_data = delete_person_from_db(person_data)
 
         if deleted_data is None:
