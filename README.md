@@ -26,6 +26,7 @@ At this point, I would recommend using a tool like [Postman](https://www.postman
 Using the ``` localhost:8000/contacts ``` URI, you can create a new contact in the fake-phonebook.
 
 This route accepts a ``` {name: NAME, phone_number: PHONE_NUMBER} ``` JSON (or dictionary) in the body of the call, where:
+
 * NAME is a string containing a name of a person or company you would like to store in the phonebook and;
 * PHONE_NUMBER is a string containing the phone number you would like to store in the phonebook.
 
@@ -33,22 +34,26 @@ This route accepts a ``` {name: NAME, phone_number: PHONE_NUMBER} ``` JSON (or d
 Using the ``` localhost:8000/contacts ``` URI, you can get all the contacts in the fake-phonebook.
 
 You can also use the ``` localhost:8000/contacts/CONTACT_ID ``` URI to get the name and phone number of a contact in the phonebook as a JSON (or dictionary), where:
+
 * CONTACT_ID is a string containing the id of a contact in the phonebook.
 
 #### Update (PUT)
 Using the ``` localhost:8000/contacts/CONTACT_ID ``` URI, you can update the name and/or phone number of a specific contact in the fake-phonebook, where:
+
 * CONTACT_ID is a string containing the id of a contact in the phonebook.
 
 This route accepts:
 * ``` {name: NAME, phone_number: PHONE_NUMBER} ``` JSON (or dictionary) in the body of the call or,
 * ``` {name: NAME} ``` JSON (or dictionary) in the body of the call or,
 * ``` {phone_number: PHONE_NUMBER} ``` JSON (or dictionary) in the body of the call
+
 Where:
 * NAME is a string containing the new name of a person or company you would like to store under the contact with the CONTACT_ID in the phonebook and;
 * PHONE_NUMBER is a string containing the new phone number you would like to store under the contact with the CONTACT_ID in the phonebook.
 
 #### Delete (DELETE)
 Using the ``` localhost:8000/contacts/CONTACT_ID ``` URI, you can delete a specific contact in the fake-phonebook, where:
+
 * CONTACT_ID is a string containing the id of the contact you would like to delete in the phonebook.
 
 ### Seeding the database
