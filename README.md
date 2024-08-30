@@ -56,7 +56,7 @@ Using the ``` localhost:8000/contacts/CONTACT_ID ``` URI, you can delete a speci
 
 * CONTACT_ID is a string containing the id of the contact you would like to delete in the phonebook.
 
-### Seeding the database
+### Seeding the Phonebook
 If you ever need more people in the phonebook (for one reason or another), you can:
 * navigate to fake-phonebook/fake_phonebook in the terminal
 * write ``` python generate_fake_contact_data.py ``` and press the enter key
