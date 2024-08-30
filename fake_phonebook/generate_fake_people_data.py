@@ -24,7 +24,7 @@ Letting the logger know to write all logs at the info level (my logs) and above 
 file called create_and_load_data.log
 """
 logging.basicConfig(
-    filename="create_and_load_data.log",
+    filename="generate_fake_people_data.log",
     filemode="w",  # To write new content everytime the program is run again
     encoding="utf-8",
     level=logging.INFO,
