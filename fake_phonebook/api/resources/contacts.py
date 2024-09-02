@@ -119,12 +119,12 @@ class Contacts:
         their name and phone number) has been removed from the phonebook.
         """
         contact_data = get_contact_by_id(contact_id)
-        deleted_data = delete_contact_from_db(contact_data)
 
-        if deleted_data is None:
+        if contact_data is None:
             resp.status = falcon.HTTP_404
             resp.text = f"Contact with id: {contact_id} was not found."
         else:
+            deleted_data = delete_contact_from_db(contact_data)
             resp.status = falcon.HTTP_201
             resp.text = (
                 f"A contact, called {deleted_data.get('name')}, with a phone number "
