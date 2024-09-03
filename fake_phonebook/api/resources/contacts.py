@@ -50,9 +50,20 @@ class Contacts:
     # Get methods (Read)
     def on_get(self, req, resp):
         """Handles GET requests"""
-        resp.status = falcon.HTTP_200  # This is the default status
-        resp.content_type = falcon.MEDIA_JSON
-        resp.media = get_contacts()
+
+        if req.params.get("name_starts_with") is None:
+            resp.status = falcon.HTTP_200  # This is the default status
+            resp.content_type = falcon.MEDIA_JSON
+            resp.media = get_contacts()
+        else:
+            resp.status = falcon.HTTP_200  # This is the default status
+            resp.content_type = falcon.MEDIA_JSON
+            resp.media = get_contacts_starting_with(
+                req.params.get("name_starts_with")
+                .replace(" ", "")
+                .replace("+", "")
+                .strip()
+            )
 
     def on_get_by_id(self, req, resp, contact_id: str):
         """Handles a GET request for a specific contact"""
@@ -64,23 +75,6 @@ class Contacts:
         else:
             resp.status = falcon.HTTP_200
             resp.media = get_contact_by_id(contact_id)
-
-    """
-    def on_get_starts_with(self, req, resp, letter_or_name: str):
-        # Handles a GET request to retrieve contacts in the phonebook who's name starts
-        # with a chosen string.
-        resp.content_type = falcon.MEDIA_JSON
-
-        if get_contacts_starting_with(letter_or_name) is None:
-            resp.status = falcon.HTTP_404
-            resp.text = (
-                f"There is no one in the phonebook whose name starts with "
-                f"'{letter_or_name}'\n"
-            )
-        else:
-            resp.status = falcon.HTTP_200
-            resp.media = get_contacts_starting_with(letter_or_name)
-    """
 
     # Update method (Update)
     def on_put_by_id(self, req, resp, contact_id: str):
