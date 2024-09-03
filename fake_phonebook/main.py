@@ -10,7 +10,7 @@ app = falcon.App()
 # Resources are represented by long-lived class instances
 contacts = Contacts()
 
-# Supported operations are: Create (POST), Read (GET - every one in the resource),
+# Supported operations are: Create (POST), Read (GET - everyone in the resource),
 # Delete (DELETE - multiple contacts)
 app.add_route("/contacts", contacts)
 
