@@ -58,12 +58,8 @@ class Contacts:
         else:
             resp.status = falcon.HTTP_200  # This is the default status
             resp.content_type = falcon.MEDIA_JSON
-            resp.media = get_contacts_starting_with(
-                req.params.get("name_starts_with")
-                .replace(" ", "")
-                .replace("+", "")
-                .strip()
-            )
+            string = req.params.get("name_starts_with").replace("+", " ").strip()
+            resp.media = get_contacts_starting_with(string)
 
     def on_get_by_id(self, req, resp, contact_id: str):
         """Handles a GET request for a specific contact"""
