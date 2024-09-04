@@ -3,7 +3,7 @@ import sqlite3
 from api.resources.helpers.env import PATH_TO_DB
 
 
-def get_contacts() -> list[dict[str, str]]:
+def get_contacts() -> list[dict[str, str]] | None:
     """
     Returns a list of contacts and their phone number in the phonebook ordered in
     alphabetical order (a-z)
@@ -22,7 +22,7 @@ def get_contacts() -> list[dict[str, str]]:
     ]
     con.close()
 
-    return contacts
+    return contacts if len(contacts) > 0 else None
 
 
 def get_contact_by_id(contact_id: str) -> dict[str, str] | None:
