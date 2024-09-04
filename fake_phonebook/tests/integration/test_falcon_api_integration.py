@@ -92,7 +92,17 @@ def test_get_contacts(client):
     """
     Test that getting all contacts returns status code 200 (or OK)
     """
+    # Use case 1: Without any query parameters
     response = client.simulate_get(f"/contacts")
+    assert response.status == falcon.HTTP_OK
+
+    # Use case 2: With a non-supported query parameter (should have the same
+    # functionality as Use case 1)
+    response = client.simulate_get(f"/contacts?starts_with=Adam+D")
+    assert response.status == falcon.HTTP_OK
+
+    # Use case 2: With the supported query parameter of name_starts_with
+    response = client.simulate_get(f"/contacts?name_starts_with=Adam+D")
     assert response.status == falcon.HTTP_OK
 
 
