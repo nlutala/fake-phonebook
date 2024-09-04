@@ -37,6 +37,10 @@ You can also use the ``` localhost:8000/contacts/CONTACT_ID ``` URI to get the n
 
 * CONTACT_ID is a string containing the id of a contact in the phonebook.
 
+In addition to this, you can also use the ``` localhost:8000/contacts?name_starts_with=LETTER_OR_NAME ``` URI to get a list of contacts who's name start with LETTER_OR_NAME in the phonebook as a JSON (or dictionary), where:
+
+* LETTER_OR_NAME is a singular character (either letter of the alphabet or symbol or however you would like to retrieve a saved contact in the phonebook), or a name. Perhaps you know a few contacts saved as John, but you only know that their surname starts with D, you can use the GET operation on ``` localhost:8000/contacts?name_starts_with=john+d ``` to get a list of contacts whose name starts with "John D". **Notice how the + symbol is used to denote a space in the URI.**
+
 #### Update (PUT)
 Using the ``` localhost:8000/contacts/CONTACT_ID ``` URI, you can update the name and/or phone number of a specific contact in the fake-phonebook, where:
 
