@@ -90,8 +90,8 @@ class Contacts:
             resp.status = falcon.HTTP_400
             resp.text = (
                 "Bad request. Please ensure that the 'name' and 'phone_number' "
-                "key-value pairs are present and that this contact you "
-                "would like to update the details of exists in the phonebook. "
+                "key-value pairs are present in the body of the api call and that the "
+                "contact you would like to update the details of exists in the phonebook. "
             )
         else:
             resp.status = falcon.HTTP_201
@@ -137,8 +137,8 @@ class Contacts:
             resp.status = falcon.HTTP_400
             resp.text = (
                 "Bad request. Please ensure that you have supplied a list of ids of "
-                "the contacts you would like to remove is given as key-value pairs, and "
-                "that these ids already exist in the phonebook."
+                "the contacts you would like to remove is given as key-value pairs, in "
+                "the body of the api call and that these ids exist in the phonebook."
             )
         else:
             resp.status = falcon.HTTP_201
