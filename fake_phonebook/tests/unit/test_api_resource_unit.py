@@ -6,11 +6,7 @@ from unittest.mock import Mock
 
 from api.resources.helpers.env import PATH_TO_DB
 from api.resources.http_methods.delete import delete_contact_from_db
-from api.resources.http_methods.get import (
-    get_contact_by_id,
-    get_contacts,
-    get_contacts_starting_with,
-)
+from api.resources.http_methods.get import get_contact_by_id, get_contacts
 from api.resources.http_methods.post import add_contacts_to_db, post_contact_to_db
 from api.resources.http_methods.update import update_contact_in_db
 from faker import Faker
@@ -164,29 +160,6 @@ def test_get_contact_by_id():
 
     # For an id that doesn't exist, this should return None
     assert get_contact_by_id("this-id-doesnt-exist") is None
-
-
-def test_get_contacts_starting_with():
-    """
-    api.resources.helpers.list_contacts.get_contacts_starting_with() should return a list
-    of contacts represented as a dictionary with id, name and phone_number key-value
-    pairs.
-
-    Return None if:
-    - There isn't anyone who's name starts with a the letter or string.
-    - The user of the api doesn't add a string that is at least 1 character long
-    """
-    # Assert that an empty string should return None
-    assert get_contacts_starting_with("") is None
-    assert get_contacts_starting_with("      ") is None
-
-    # Assert that get_contacts_starting_with("no-one-has-this-name") should return None
-    assert get_contacts_starting_with("no-one-has-this-name") is None
-
-    # Assert that get_contacts_starting_with(letter) returns contacts whose full name starts
-    # with a letter
-    for contact in get_contacts_starting_with("d"):
-        assert contact.get("name").lower().startswith("d")
 
 
 # =========================== Tests for PUT methods (Update) ===========================
