@@ -3,7 +3,7 @@ import sqlite3
 from api.resources.helpers.env import PATH_TO_DB
 
 
-def get_contacts(filters=None) -> list[dict[str, str]] | None:
+def get_contacts(filters={}) -> list[dict[str, str]] | None:
     """
     Returns a list of contacts and their phone number in the phonebook ordered in
     alphabetical order (a-z)
@@ -16,7 +16,7 @@ def get_contacts(filters=None) -> list[dict[str, str]] | None:
     where_clause = []
     order_by_clause = " ORDER BY name"
 
-    if filters is not None or filters != {}:
+    if filters != {}:
         for key in filters.keys():
             if key in ["name"]:
                 where_clause.append(
