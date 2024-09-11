@@ -25,11 +25,10 @@ def delete_contact_from_db(contact_data: dict[str, str]) -> dict[str, str] | Non
         return None
 
     # Now delete this contact from the database
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    cur.execute(f"delete from contacts where id = '{contact_data.get('id')}'")
-    con.commit()
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        cur.execute(f"delete from contacts where id = '{contact_data.get('id')}'")
+        con.commit()
 
     return contact_to_delete
 
@@ -74,10 +73,9 @@ def delete_contacts_from_db(
     group_of_ids = ", ".join([f"'{contact.get('id')}'" for contact in deleted_contacts])
 
     # Now delete these contacts from the database
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    cur.execute(f"delete from contacts where id in ({group_of_ids})")
-    con.commit()
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        cur.execute(f"delete from contacts where id in ({group_of_ids})")
+        con.commit()
 
     return deleted_contacts
