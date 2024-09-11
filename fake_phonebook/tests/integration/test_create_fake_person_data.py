@@ -100,10 +100,10 @@ def test_step_3_and_step_4():
 
     parent_dir = os.path.dirname(__file__).partition("tests")[0]
     path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
-    cur = con.cursor()
-    cur.execute(
-        f"delete from people where id in ('{rows_in_csv[0][0]}', '{rows_in_csv[1][0]}')"
-    )
-    con.commit()
-    con.close()
+
+    with sqlite3.connect(path_to_db) as con:
+        cur = con.cursor()
+        cur.execute(
+            f"delete from people where id in ('{rows_in_csv[0][0]}', '{rows_in_csv[1][0]}')"
+        )
+        con.commit()

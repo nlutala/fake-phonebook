@@ -160,18 +160,17 @@ def test_load_people_to_db_on_predefined_file():
     # Get the amount of records before loading people to the db
     parent_dir = current_dir.partition("tests")[0]
     path_to_db = os.path.join(parent_dir, "fake_people.db")
-    con = sqlite3.connect(path_to_db)
-    cur = con.cursor()
-    records_before = [row for row in cur.execute("SELECT * FROM people")]
-    con.close()
+
+    with sqlite3.connect(path_to_db) as con:
+        cur = con.cursor()
+        records_before = [row for row in cur.execute("SELECT * FROM people")]
 
     num_of_records = load_people_to_db(
         os.path.join(test_files_dir, "fake_person_data.csv")
     )
 
-    con = sqlite3.connect(path_to_db)
-    cur = con.cursor()
-    records_after = [row for row in cur.execute("SELECT * FROM people")]
-    con.close()
+    with sqlite3.connect(path_to_db) as con:
+        cur = con.cursor()
+        records_after = [row for row in cur.execute("SELECT * FROM people")]
 
     assert num_of_records == len(records_after) - len(records_before)

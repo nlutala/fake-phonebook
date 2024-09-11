@@ -9,11 +9,7 @@ from api.resources.http_methods.delete import (
     delete_contact_from_db,
     delete_contacts_from_db,
 )
-from api.resources.http_methods.get import (
-    get_contact_by_id,
-    get_contacts,
-    get_contacts_starting_with,
-)
+from api.resources.http_methods.get import get_contact_by_id, get_contacts
 from api.resources.http_methods.post import post_contact_to_db
 from api.resources.http_methods.update import update_contact_in_db
 
@@ -50,16 +46,9 @@ class Contacts:
     # Get methods (Read)
     def on_get(self, req, resp):
         """Handles GET requests"""
-
-        if req.params.get("name_starts_with") is None:
-            resp.status = falcon.HTTP_200  # This is the default status
-            resp.content_type = falcon.MEDIA_JSON
-            resp.media = get_contacts()
-        else:
-            resp.status = falcon.HTTP_200  # This is the default status
-            resp.content_type = falcon.MEDIA_JSON
-            string = req.params.get("name_starts_with").replace("+", " ").strip()
-            resp.media = get_contacts_starting_with(string)
+        resp.status = falcon.HTTP_200  # This is the default status
+        resp.content_type = falcon.MEDIA_JSON
+        resp.media = get_contacts(req.params)
 
     def on_get_by_id(self, req, resp, contact_id: str):
         """Handles a GET request for a specific contact"""
