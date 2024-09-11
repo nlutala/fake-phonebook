@@ -44,10 +44,11 @@ def update_contact_in_db(contact_data: dict[str, str]) -> dict[str, str] | None:
 
     # Now update the details after confirming that the id, name and phone_number
     # were given as key-value pairs
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    cur.execute(f"UPDATE contacts {set_clause} WHERE id = '{contact_data.get('id')}'")
-    con.commit()
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        cur.execute(
+            f"UPDATE contacts {set_clause} WHERE id = '{contact_data.get('id')}'"
+        )
+        con.commit()
 
     return get_contact_by_id(contact_data.get("id"))
