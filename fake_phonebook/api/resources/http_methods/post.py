@@ -19,40 +19,41 @@ def add_contacts_to_db(contact_row: list[tuple]) -> int:
     only_insert = True if "fake_contacts.db" in os.listdir(PARENT_DIR) else False
 
     # Create a database called fake_contacts
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
 
-    if only_insert is False:
-        # Create the table in the fake_contacts database
-        cur.execute(
-            """
-            CREATE TABLE contacts(
-                id,
-                name,
-                phone_number
+        if only_insert is False:
+            # Create the table in the fake_contacts database
+            cur.execute(
+                """
+                CREATE TABLE contacts(
+                    id,
+                    name,
+                    phone_number
+                )
+                """
             )
-            """
-        )
 
-    # Check whether the contact already exists in the db before inserting them
-    contacts_in_the_db = 0
-    contacts_to_insert = []
-    for record in contact_row:
-        temp_result = [
-            row
-            for row in cur.execute(f"SELECT * FROM contacts WHERE name = '{record[1]}'")
-        ]
+        # Check whether the contact already exists in the db before inserting them
+        contacts_in_the_db = 0
+        contacts_to_insert = []
+        for record in contact_row:
+            temp_result = [
+                row
+                for row in cur.execute(
+                    f"SELECT * FROM contacts WHERE name = '{record[1]}'"
+                )
+            ]
 
-        if len(temp_result) != 0:
-            contacts_in_the_db += 1
-        else:
-            contacts_to_insert.append(tuple(record))
+            if len(temp_result) != 0:
+                contacts_in_the_db += 1
+            else:
+                contacts_to_insert.append(tuple(record))
 
-    if len(contacts_to_insert) != 0:
-        # Insert the data about the fake contacts from the tuple into the table
-        cur.executemany("INSERT INTO contacts VALUES(?, ?, ?)", contacts_to_insert)
-        con.commit()
-        con.close()
+        if len(contacts_to_insert) != 0:
+            # Insert the data about the fake contacts from the tuple into the table
+            cur.executemany("INSERT INTO contacts VALUES(?, ?, ?)", contacts_to_insert)
+            con.commit()
 
     return len(contacts_to_insert)
 
