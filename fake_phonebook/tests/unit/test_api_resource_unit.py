@@ -51,13 +51,12 @@ def test_add_contacts_to_db():
     assert add_contacts_to_db(contacts) == 1
 
     # Remove side-effects from the test
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    cur.execute(
-        f"delete from contacts where id in ('{contacts[0][0]}', '{contacts[1][0]}')"
-    )
-    con.commit()
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        cur.execute(
+            f"delete from contacts where id in ('{contacts[0][0]}', '{contacts[1][0]}')"
+        )
+        con.commit()
 
 
 def test_post_contact_to_db(mocker: Mock):
@@ -104,11 +103,10 @@ def test_post_contact_to_db(mocker: Mock):
     assert contact_id is None
 
     # Remove side-effects from the test
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    cur.execute(f"delete from contacts where phone_number = '{phone_number}'")
-    con.commit()
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        cur.execute(f"delete from contacts where phone_number = '{phone_number}'")
+        con.commit()
 
 
 # =========================== Tests for GET methods (Read) ============================
@@ -147,10 +145,9 @@ def test_get_contact_by_id():
     If the contact doesn't exist. Return null.
     """
     # Get a list of valid ids of contacts in the database
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    ids = [id[0] for id in cur.execute("SELECT id FROM contacts")]
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        ids = [id[0] for id in cur.execute("SELECT id FROM contacts")]
 
     # Randomly choose one of these ids to test the get_contact_by_id with
     # The response of the get_contact_by_id() function should not be None
@@ -170,12 +167,13 @@ def test_update_contact_in_db(mocker: Mock):
     None if the contact could not be deleted from the database successfully.
     """
     # Get a random contact from the database
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    contacts = [
-        record for record in cur.execute("SELECT id, name, phone_number FROM contacts")
-    ]
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        contacts = [
+            record
+            for record in cur.execute("SELECT id, name, phone_number FROM contacts")
+        ]
+
     original_contact = choice(contacts)
 
     # If the user of the api does not send an id key-value pair, update_contact_in_db()
@@ -281,12 +279,12 @@ def test_delete_contact_from_db(mocker: Mock):
     could not be deleted from the database successfully.
     """
     # Get a list of valid ids of contacts in the database
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    contacts = [
-        record for record in cur.execute("SELECT id, name, phone_number FROM contacts")
-    ]
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        contacts = [
+            record
+            for record in cur.execute("SELECT id, name, phone_number FROM contacts")
+        ]
 
     # Randomly choose one of these contacts to test the delete_contact_from_db with
     contact = choice(contacts)
@@ -325,13 +323,14 @@ def test_delete_contact_from_db(mocker: Mock):
     }
 
     # Validate that this contact no longer exists in the database
-    con = sqlite3.connect(PATH_TO_DB)
-    cur = con.cursor()
-    contacts = [
-        record
-        for record in cur.execute(f"SELECT * FROM contacts WHERE id = '{p.get('id')}'")
-    ]
-    con.close()
+    with sqlite3.connect(PATH_TO_DB) as con:
+        cur = con.cursor()
+        contacts = [
+            record
+            for record in cur.execute(
+                f"SELECT * FROM contacts WHERE id = '{p.get('id')}'"
+            )
+        ]
 
     assert len(contacts) == 0
 
